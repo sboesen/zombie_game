@@ -1,4 +1,4 @@
-import { Game } from '../game';
+import { Game } from '../game/Game';
 
 export function updateStatusUI(game: Game): string {
     const totalHealth = game.getTotalHealth();

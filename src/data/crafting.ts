@@ -1,4 +1,4 @@
-import { Item } from '../models/Item';
+import { Item } from '../game/Item';
 import { CraftingRecipe } from '../game/CraftingRecipe';
 
 export const craftingRecipes: CraftingRecipe[] = [

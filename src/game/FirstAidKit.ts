@@ -1,7 +1,7 @@
 import { Player } from './Player';
 import { BodyPart } from './health';
 import { addMessage } from '../utils/ui';
-import { Item } from '../models/Item'; // Adjusted import path
+import { Item } from '../game/Item'; // Adjusted import path
 
 export class FirstAidKit implements Item { // Ensure it implements Item
     name: string;
@@ -28,7 +28,7 @@ export class FirstAidKit implements Item { // Ensure it implements Item
 
         const healAmount = 20;
         const originalHealth = part.health;
-        player.health.heal(bodyPart, healAmount);
+        player.health.healBodyPart(bodyPart, healAmount);
         const actualHealAmount = part.health - originalHealth;
 
         this.uses--;
@@ -55,6 +55,8 @@ export function useFirstAidKit(player: Player, bodyPart: string): boolean {
         addMessage("You don't have a First Aid Kit.");
         return false; // Indicate failure
     }
+    player.health.stopBleedingAll(); // Stop bleeding for all body parts
+
 
     firstAidKit.use(player, bodyPart); // Use the existing FirstAidKit instance
     return true; // Indicate success

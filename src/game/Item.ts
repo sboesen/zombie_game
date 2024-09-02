@@ -1,19 +1,10 @@
 export interface Item {
     name: string;
     type: string;
-    effect?: number;
-    durability?: number;
-    maxDurability?: number;
-    ammoType?: string;
-    description: string;
-    quantity: number;
-}
-
-export interface Tool extends Item {
-    durability: number;
-}
-
-export interface Weapon extends Item {
-    ammoType: string;
-    durability: number;
+    effect?: number; // Example property
+    durability?: number; // Optional for general items
+    maxDurability?: number; // Optional for general items
+    ammoType?: string; // Optional for weapons
+    description?: string; // Include description if needed
+    quantity?: number; // Optional for general items
 }

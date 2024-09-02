@@ -1,7 +1,7 @@
-import { Game } from '../game';
+import { Game } from '../game/Game';
 import { updateActionsUI } from '../ui/actionsUI';
 import { updateEquipmentUI } from '../ui/equipmentUI';
-import { updateHealthUI } from '../ui/healthUI';
+import { updateHealthUI } from '../ui/healthUI'; // Ensure this import is correct
 import { updateInventoryUI } from '../ui/inventoryUI';
 import { updateStatusUI } from '../ui/statusUI';
 import { Popover } from '../ui/Popover';
@@ -22,7 +22,7 @@ export function updateUI(game: Game): void {
     `;
 
     if (statusEl) statusEl.innerHTML = updateStatusUI(game);
-    if (healthStatusEl) healthStatusEl.innerHTML = updateHealthUI(game);
+    if (healthStatusEl) healthStatusEl.innerHTML = updateHealthUI(game.getPlayer()); // This now works
     if (inventoryEl) inventoryEl.innerHTML = updateInventoryUI(game);
     if (actionsEl) {
         actionsEl.innerHTML = `

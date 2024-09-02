@@ -1,8 +1,11 @@
-import { HealthSystem } from './health';
-import { Item, Tool } from '../models/Item'; // Ensure Tool is imported
+import { HealthSystem } from './health'; // Ensure this import is correct
+import { Item } from '../game/Item'; // Ensure Tool is imported
+import { Tool } from './Tool';
 
 export class Player {
-    health: HealthSystem;
+    health: HealthSystem; // Change this to HealthSystem
+    defending: boolean = false;
+
     hunger: number;
     inventory: Item[];
     equipment: {
@@ -14,7 +17,7 @@ export class Player {
     ammo: { [key: string]: number };
 
     constructor() {
-        this.health = new HealthSystem();
+        this.health = new HealthSystem(); // Initialize as an instance of HealthSystem
         this.hunger = 100;
         this.inventory = [];
         this.equipment = {

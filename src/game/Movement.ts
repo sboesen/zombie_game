@@ -1,4 +1,4 @@
-import { Game } from '../game';
+import { Game } from '../game/Game';
 import { addMessage, updateUI } from '../utils/ui';
 import { Player } from './Player'; // Add this import
 
@@ -37,5 +37,14 @@ export function rest(player: Player) {
         // ... existing rest logic ...
     } else {
         console.log("Cannot rest. Player is incapacitated.");
+    }
+}
+
+function someFunction(player: Player) {
+    const head = player.health.getBodyPart('Head'); // Access the head body part
+    if (head) {
+        console.log(`Head health: ${head.health}`);
+    } else {
+        console.log('Head part not found');
     }
 }

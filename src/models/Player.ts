@@ -1,4 +1,4 @@
-import { Item } from './Item';
+import { Item } from '../game/Item';
 
 export interface Player {
     health: {

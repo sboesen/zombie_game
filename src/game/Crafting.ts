@@ -1,4 +1,4 @@
-import { Item } from '../models/Item'; // Update the import path
+import { Item } from '../game/Item'; // Update the import path
 import { Player } from './Player'; // Import Player instead of Game
 import { addMessage } from '../utils/ui';
 import { CraftingComponent } from './CraftingComponent';

@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/game.ts', // Adjust the entry point as needed
+    entry: './src/main.ts', // Adjust the entry point as needed
     output: {
         filename: 'merged.js',
         path: path.resolve(__dirname, 'dist'),

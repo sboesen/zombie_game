@@ -1,4 +1,4 @@
-import { Game } from '../game';
+import { Game } from '../game/Game';
 
 export function updateEquipmentUI(game: Game): string {
     const player = game.getPlayer();

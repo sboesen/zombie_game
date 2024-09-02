@@ -1,4 +1,4 @@
-import { Game } from '../game';
+import { Game } from '../game/Game';
 
 export function updateActionsUI(game: Game): string {
     return `

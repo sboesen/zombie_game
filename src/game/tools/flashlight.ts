@@ -1,4 +1,4 @@
-import { Tool } from '../../game/Item';
+import { Tool } from '../../game/Tool';
 
 export const flashlight: Tool = {
     name: "Flashlight",
