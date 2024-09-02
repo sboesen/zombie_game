@@ -1,16 +1,5 @@
 import { Item } from '../models/Item';
-
-export interface CraftingComponent {
-    name: string;
-    quantity: number;
-}
-
-export interface CraftingRecipe {
-    name: string;
-    components: CraftingComponent[];
-    result: Item;
-    ingredients: CraftingComponent[];
-}
+import { CraftingRecipe } from '../game/CraftingRecipe';
 
 export const craftingRecipes: CraftingRecipe[] = [
     {

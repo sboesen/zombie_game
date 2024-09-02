@@ -2,7 +2,8 @@ import { Item, Tool } from './models/Item'; // Ensure Tool is imported
 import { GameLocation } from './game/Location';
 import { Player } from './game/Player';
 import { locations } from './data/locations';
-import { craftingRecipes, CraftingRecipe } from './data/crafting';
+import { CraftingRecipe } from './game/CraftingRecipe';
+import { craftingRecipes } from './game/Crafting';
 import { updateUI, addMessage, shakeButton, updateCraftingMenu } from './utils/ui'; // Import updateCraftingMenu
 import { Weather, weatherTypes } from './game/Weather';
 import { toggleFlashlight, fight } from './game/Actions';

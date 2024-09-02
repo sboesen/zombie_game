@@ -8,3 +8,12 @@ export interface Item {
     description: string;
     quantity: number;
 }
+
+export interface Tool extends Item {
+    durability: number;
+}
+
+export interface Weapon extends Item {
+    ammoType: string;
+    durability: number;
+}

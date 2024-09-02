@@ -1,7 +1,9 @@
 import { Game } from '../game';
-import { craftingRecipes, CraftingRecipe, CraftingComponent } from '../data/crafting';
+import { CraftingRecipe } from '../game/CraftingRecipe';
 import { items } from '../data/items'; // Assuming you have an items data file
 import { Item } from '../models/Item'; // Ensure Item is imported
+import { CraftingComponent } from '../game/CraftingComponent';
+import { craftingRecipes } from '../data/crafting';
 
 function categorizeRecipes(): { [key: string]: CraftingRecipe[] } {
     const categories: { [key: string]: CraftingRecipe[] } = {
