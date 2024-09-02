@@ -1,0 +1,153 @@
+.game-button {
+    transition: all 0.2s ease;
+    position: relative;
+    top: 0;
+    box-shadow: 0 4px 0 #1a1c2c;
+    transform: translateY(0);
+    overflow: hidden;
+    border: 1px solid #4a5568;
+}
+
+.game-button:hover {
+    top: -2px;
+    box-shadow: 0 6px 0 #1a1c2c;
+}
+
+.game-button:active {
+    top: 4px;
+    box-shadow: 0 0 0 #1a1c2c;
+    transform: translateY(4px);
+}
+
+.game-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    background-size: 400% 400%;
+    opacity: 0;
+    z-index: -1;
+    animation: shimmer 10s ease infinite, glow 5s ease-in-out infinite;
+}
+
+.game-button:hover::before {
+    opacity: 0.2;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        opacity: 0.1;
+    }
+    50% {
+        opacity: 0.2;
+    }
+}
+
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shimmerAnimation 3s infinite;
+}
+
+@keyframes shimmerAnimation {
+    0% {
+        transform: translateX(-100%) rotate(30deg);
+    }
+    100% {
+        transform: translateX(100%) rotate(30deg);
+    }
+}
+
+/* Zombie theme adjustments */
+.game-button {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+.game-button:hover {
+    background-color: #4a5568;
+}
+
+.game-button:active {
+    background-color: #1a202c;
+}
+}
+
+/* ... (keep existing styles) */
+
+.item-popover {
+    pointer-events: none;
+    max-width: 200px;
+    font-size: 0.8rem;
+    z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.durability-bar {
+    height: 4px;
+    background-color: #4a5568;
+    margin-top: 2px;
+}
+
+.durability-bar > div {
+    height: 100%;
+    background-color: #48bb78;
+}
+
+/* Remove the #health-menu styles */
+/* #health-menu {
+    max-width: 300px;
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    background-color: rgba(44, 62, 80, 0.8);
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+} */
+
+/* ... (keep the rest of the styles unchanged) */
+
+.status-popover {
+    pointer-events: none;
+    max-width: 200px;
+    font-size: 0.8rem;
+    z-index: 1000;
+}
+
+.health-status, .hunger-status {
+    cursor: help;
+}
+
+/* ... (keep the rest of the styles unchanged) */

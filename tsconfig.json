@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2016", // or later
+    "lib": ["es2016", "dom"], // Ensure 'es2016' or later is included
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"]
+}
