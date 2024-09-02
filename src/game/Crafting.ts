@@ -1,50 +1,51 @@
-import { Game } from '../game';
+import { Item } from '../models/Item'; // Update the import path
+import { Player } from './Player'; // Import Player instead of Game
 import { addMessage } from '../utils/ui';
-import { CraftingRecipe } from '../data/crafting';
 import { CraftingComponent } from './CraftingComponent';
+import { CraftingRecipe } from './CraftingRecipe';
 
-export function craft(game: Game, recipeName: string): void {
-    const recipe = game.getCraftingRecipes().find(r => r.result.name === recipeName);
+// Import craftingRecipes from the data file
+import { craftingRecipes } from '../data/crafting';
+
+export { craftingRecipes };
+
+export function craft(player: Player, recipeName: string): void {
+    const recipe = craftingRecipes.find(r => r.name === recipeName);
     if (!recipe) {
-        addMessage(`Unknown recipe: ${recipeName}`);
+        addMessage(`Recipe for ${recipeName} not found.`);
         return;
     }
 
-    const canCraft = Object.entries(recipe.ingredients).every(([itemName, component]: [string, CraftingComponent]) => {
-        const playerItem = game.getPlayer().inventory.find(item => item.name === itemName);
-        return playerItem && getItemQuantity(game, itemName) >= component.quantity;
-    });
-
-    if (canCraft) {
-        Object.entries(recipe.ingredients).forEach(([itemName, component]: [string, CraftingComponent]) => {
-            for (let i = 0; i < component.quantity; i++) {
-                const index = game.getPlayer().inventory.findIndex(item => item.name === itemName);
-                game.getPlayer().inventory.splice(index, 1);
-            }
-        });
-        game.getPlayer().inventory.push(recipe.result);
-        addMessage(`You crafted a ${recipe.result.name}!`);
-    } else {
-        addMessage("You don't have the required ingredients to craft this item.");
+    // Check if player has all required components
+    for (const component of recipe.components) {
+        if (getItemQuantity(player, component.name) < component.quantity) {
+            addMessage(`Not enough ${component.name} to craft ${recipeName}.`);
+            return;
+        }
     }
-    game.advanceTime(2); // Crafting takes 2 hours
+
+    // Remove components from inventory
+    for (const component of recipe.components) {
+        removeItems(player, component.name, component.quantity);
+    }
+
+    // Add crafted item to inventory
+    player.inventory.push(recipe.result);
+
+    addMessage(`Successfully crafted ${recipeName}.`);
 }
 
-function getItemQuantity(game: Game, itemName: string): number {
-    return game.getPlayer().inventory.filter(item => item.name === itemName).length;
+function getItemQuantity(player: Player, itemName: string): number {
+    return player.inventory.filter((item) => item.name === itemName).length;
 }
 
-const components: [string, CraftingComponent][] = [
-    ['wood', { name: 'wood', quantity: 5 }],
-    ['metal', { name: 'metal', quantity: 3 }]
-];
+function removeItems(player: Player, itemName: string, quantity: number): void {
+    for (let i = 0; i < quantity; i++) {
+        const index = player.inventory.findIndex((item) => item.name === itemName);
+        if (index !== -1) {
+            player.inventory.splice(index, 1);
+        }
+    }
+}
 
-// Update the filter function to match the correct types
-const filteredComponents = components.filter(([itemName, component]) => {
-    return component.quantity > 0;
-});
-
-// Update the forEach function to match the correct types
-components.forEach(([itemName, component]) => {
-    console.log(`${component.name}: ${component.quantity}`);
-});
+// ... (keep other crafting-related functions)
