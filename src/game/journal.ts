@@ -12,4 +12,6 @@ export class Journal {
     getEntries() {
         return this.entries;
     }
+
+    // ... other journal methods
 }

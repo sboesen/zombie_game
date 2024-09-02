@@ -3,36 +3,81 @@ export interface BodyPart {
     health: number;
     maxHealth: number;
     infected: boolean;
+    bleeding: boolean;
 }
 
 export class HealthSystem {
-    bodyParts: BodyPart[];
+    bodyParts: { [key: string]: BodyPart };
+    private overallHealth: number;
 
     constructor() {
-        this.bodyParts = [
-            { name: 'Head', health: 100, maxHealth: 100, infected: false },
-            { name: 'Torso', health: 100, maxHealth: 100, infected: false },
-            { name: 'Left Arm', health: 100, maxHealth: 100, infected: false },
-            { name: 'Right Arm', health: 100, maxHealth: 100, infected: false },
-            { name: 'Left Leg', health: 100, maxHealth: 100, infected: false },
-            { name: 'Right Leg', health: 100, maxHealth: 100, infected: false },
-        ];
+        this.bodyParts = {
+            head: { name: "Head", health: 100, maxHealth: 100, infected: false, bleeding: false },
+            torso: { name: "Torso", health: 100, maxHealth: 100, infected: false, bleeding: false },
+            leftArm: { name: "Left Arm", health: 100, maxHealth: 100, infected: false, bleeding: false },
+            rightArm: { name: "Right Arm", health: 100, maxHealth: 100, infected: false, bleeding: false },
+            leftLeg: { name: "Left Leg", health: 100, maxHealth: 100, infected: false, bleeding: false },
+            rightLeg: { name: "Right Leg", health: 100, maxHealth: 100, infected: false, bleeding: false },
+        };
+        this.overallHealth = 100; // Initialize overallHealth
+        this.updateOverallHealth();
     }
 
-    takeDamage(partName: string, damage: number) {
-        const part = this.bodyParts.find(p => p.name === partName);
-        if (part) {
-            part.health = Math.max(0, part.health - damage);
-            if (part.health === 0) {
-                part.infected = true; // Example infection logic
+    takeDamage(part: string, amount: number) {
+        if (this.bodyParts[part]) {
+            this.bodyParts[part].health = Math.max(0, this.bodyParts[part].health - amount);
+            if (Math.random() < 0.3) { // 30% chance to cause bleeding
+                this.bodyParts[part].bleeding = true;
+            }
+            if (Math.random() < 0.1) { // 10% chance to cause infection
+                this.bodyParts[part].infected = true;
+            }
+            this.updateOverallHealth();
+        }
+    }
+
+    heal(part: string, amount: number) {
+        if (this.bodyParts[part]) {
+            this.bodyParts[part].health = Math.min(this.bodyParts[part].maxHealth, this.bodyParts[part].health + amount);
+            this.updateOverallHealth();
+        }
+    }
+
+    stopBleeding(part: string) {
+        if (this.bodyParts[part]) {
+            this.bodyParts[part].bleeding = false;
+        }
+    }
+
+    cureInfection(part: string) {
+        if (this.bodyParts[part]) {
+            this.bodyParts[part].infected = false;
+        }
+    }
+
+    applyStatusEffects() {
+        for (const part in this.bodyParts) {
+            if (this.bodyParts[part].bleeding) {
+                this.bodyParts[part].health = Math.max(0, this.bodyParts[part].health - 1);
+            }
+            if (this.bodyParts[part].infected) {
+                this.bodyParts[part].health = Math.max(0, this.bodyParts[part].health - 0.5);
             }
         }
+        this.updateOverallHealth();
     }
 
-    heal(partName: string, amount: number) {
-        const part = this.bodyParts.find(p => p.name === partName);
-        if (part) {
-            part.health = Math.min(part.maxHealth, part.health + amount);
-        }
+    private updateOverallHealth() {
+        const totalHealth = Object.values(this.bodyParts).reduce((sum, part) => sum + part.health, 0);
+        const totalMaxHealth = Object.values(this.bodyParts).reduce((sum, part) => sum + part.maxHealth, 0);
+        this.overallHealth = Math.round((totalHealth / totalMaxHealth) * 100);
+    }
+
+    getOverallHealth(): number {
+        return this.overallHealth;
+    }
+
+    getBodyPart(part: string): BodyPart | undefined {
+        return this.bodyParts[part];
     }
 }

@@ -1,21 +1,19 @@
-export interface Location {
+export class Location {
     name: string;
     description: string;
     items: string[];
-}
 
-export class LocationSystem {
-    locations: Location[];
-
-    constructor() {
-        this.locations = [
-            { name: 'Abandoned House', description: 'A rundown house with broken windows.', items: ['Rusty Knife', 'Canned Beans'] },
-            { name: 'Police Station', description: 'A fortified building with a few zombies inside.', items: ['Shotgun', 'Kevlar Vest'] },
-            // Add more locations here
-        ];
+    constructor(name: string, description: string, items: string[]) {
+        this.name = name;
+        this.description = description;
+        this.items = items;
     }
 
-    getLocation(name: string) {
-        return this.locations.find(loc => loc.name === name);
-    }
+    // ... other location methods
 }
+
+const locations = [
+    new Location("Abandoned House", "A rundown house with broken windows.", ["Rusty Knife", "Canned Beans"]),
+    new Location("Police Station", "A fortified building with a few zombies inside.", ["Shotgun", "Kevlar Vest"]),
+    // ... add more locations
+];

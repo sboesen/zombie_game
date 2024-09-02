@@ -1,21 +1,16 @@
 export class TimeSystem {
-    hours: number;
-    isDay: boolean;
+    currentTime: number; // 0 to 23 representing hours
+    isDaytime: boolean;
 
     constructor() {
-        this.hours = 6; // Start at 6 AM
-        this.isDay = true;
+        this.currentTime = 6; // start at 6 AM
+        this.isDaytime = true;
     }
 
     advanceTime(hours: number) {
-        this.hours += hours;
-        if (this.hours >= 24) {
-            this.hours -= 24;
-        }
-        this.isDay = this.hours >= 6 && this.hours < 18;
+        this.currentTime = (this.currentTime + hours) % 24;
+        this.isDaytime = this.currentTime >= 6 && this.currentTime < 18;
     }
 
-    getTimeOfDay() {
-        return this.isDay ? 'Day' : 'Night';
-    }
+    // ... other methods for time management
 }

@@ -1,4 +1,4 @@
-import { Item } from './models/Item';
+import { Item, Tool } from './models/Item'; // Ensure Tool is imported
 import { GameLocation } from './game/Location';
 import { Player } from './game/Player';
 import { locations } from './data/locations';
@@ -6,7 +6,7 @@ import { craftingRecipes, CraftingRecipe } from './data/crafting';
 import { updateUI, addMessage, shakeButton, updateCraftingMenu } from './utils/ui'; // Import updateCraftingMenu
 import { Weather, weatherTypes } from './game/Weather';
 import { toggleFlashlight, fight } from './game/Actions';
-import { useFirstAidKit } from './game/FirstAidKit';
+import { FirstAidKit, useFirstAidKit } from './game/FirstAidKit'; // Correctly import the FirstAidKit class and useFirstAidKit
 import { craft } from './game/Crafting';
 import { move } from './game/Movement';
 import { updateActionsUI } from './ui/actionsUI';
@@ -28,25 +28,7 @@ export class Game {
     };
 
     constructor() {
-        this.player = {
-            health: {
-                head: 100,
-                torso: 100,
-                leftArm: 100,
-                rightArm: 100,
-                leftLeg: 100,
-                rightLeg: 100
-            },
-            hunger: 100,
-            inventory: [],
-            equipment: {
-                meleeWeapon: null,
-                rangedWeapon: null,
-                armor: null
-            },
-            ammo: {}
-        };
-
+        this.player = new Player();
         this.locations = locations;
         this.currentLocation = this.locations[0];
         this.craftingRecipes = craftingRecipes;
@@ -72,7 +54,7 @@ export class Game {
         }
 
         if (['Rainy', 'Stormy'].includes(this.currentWeather.type) && Math.random() < 0.2) {
-            this.player.health.head -= 5;
+            this.player.health.takeDamage('head', 5);
             addMessage("You've caught a cold from the bad weather. [-5 Health]");
         }
     }
@@ -169,10 +151,13 @@ export class Game {
                 addMessage(`You used ${item.name}. Your hunger increased by [+${hungerIncrease}].`);
                 this.advanceTime(0.5); // Eating takes 30 minutes
             } else if (item.name === 'Flashlight') {
-                toggleFlashlight(this, item);
+                const flashlight = item as Tool; // Cast to Tool
+                toggleFlashlight(this, flashlight); // Now this should work
             } else if (item.type === 'medical') {
-                useFirstAidKit(this.player, item);
-                this.advanceTime(1); // Using medical items takes 1 hour
+                const result = useFirstAidKit(this.player, 'head'); // Pass the body part name as a string
+                if (result) {
+                    this.advanceTime(1); // Only advance time if healing was successful
+                }
             }
         }
         updateUI(this);
@@ -188,13 +173,15 @@ export class Game {
 
         const canCraft = recipe.components.every(component => {
             const item = this.player.inventory.find(i => i.name === component.name);
-            return item && item.quantity >= component.quantity;
+            return item && (item.quantity ?? 0) >= component.quantity; // Use 0 if item.quantity is undefined
         });
 
         if (canCraft) {
             recipe.components.forEach(component => {
                 const item = this.player.inventory.find(i => i.name === component.name);
-                if (item) item.quantity -= component.quantity;
+                if (item) {
+                    item.quantity = (item.quantity ?? 0) - component.quantity; // Use 0 if item.quantity is undefined
+                }
             });
 
             const craftedItem = { ...recipe.result, quantity: 1 };
@@ -242,7 +229,36 @@ export class Game {
     }
 
     public getTotalHealth(): number {
-        return Object.values(this.player.health).reduce((sum, health) => sum + health, 0);
+        return this.player.health.getOverallHealth();
+    }
+
+    public useFirstAidKit(): void {
+        const firstAidKit = this.player.inventory.find(item => item.name === "First Aid Kit");
+        if (firstAidKit) {
+            for (const part in this.player.health.bodyParts) {
+                this.player.health.heal(part, 20);
+                this.player.health.stopBleeding(part);
+            }
+            this.player.inventory = this.player.inventory.filter(item => item !== firstAidKit);
+            addMessage("You used a First Aid Kit. All body parts have been healed and bleeding stopped.");
+        } else {
+            addMessage("You don't have a First Aid Kit.");
+        }
+        this.advanceTime(1); // Using a First Aid Kit takes 1 hour
+    }
+
+    public useAntibiotics(): void {
+        const antibiotics = this.player.inventory.find(item => item.name === "Antibiotics");
+        if (antibiotics) {
+            for (const part in this.player.health.bodyParts) {
+                this.player.health.cureInfection(part);
+            }
+            this.player.inventory = this.player.inventory.filter(item => item !== antibiotics);
+            addMessage("You used Antibiotics. All infections have been cured.");
+        } else {
+            addMessage("You don't have any Antibiotics.");
+        }
+        this.advanceTime(1); // Using Antibiotics takes 1 hour
     }
 
     // Add public getter methods

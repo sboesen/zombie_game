@@ -1,8 +1,9 @@
 import { Game } from '../game';
 import { addMessage, shakeButton } from '../utils/ui';
-import { Item } from './Item';
+import { Item, Tool } from '../models/Item'; // Ensure Tool is imported
+import { Player } from './Player';
 
-export function toggleFlashlight(game: Game, flashlight: Item): void {
+export function toggleFlashlight(game: Game, flashlight: Tool): void { // Ensure flashlight is of type Tool
     if (flashlight.durability && flashlight.durability > 0) {
         game.setFlashlightOn(!game.isFlashlightOn());
         flashlight.durability--;
@@ -12,58 +13,14 @@ export function toggleFlashlight(game: Game, flashlight: Item): void {
     }
 }
 
+// When calling toggleFlashlight, ensure the item is a Tool
 export function fight(game: Game): void {
-    if (!game.getCurrentLocation().hasZombie) {
-        addMessage("There's no zombie here to fight!");
-        const fightButton = document.querySelector('button:contains("Fight Zombie")') as HTMLElement;
-        if (fightButton) shakeButton(fightButton);
-        return;
+    const player = game.getPlayer();
+    const flashlight = player.equipment.flashlight as Tool; // Cast to Tool if necessary
+
+    if (flashlight) {
+        toggleFlashlight(game, flashlight); // Now this should work
     }
-
-    const zombieType = getRandomZombieType();
-    const zombieDamage = getZombieDamage(zombieType);
-    const playerDamage = getPlayerDamage(game);
-
-    if (!game.getPlayer().equipment.meleeWeapon && !game.getPlayer().equipment.rangedWeapon) {
-        game.getPlayer().health.head -= zombieDamage;
-        addMessage(`You fought the ${zombieType} zombie with your bare hands! You lost ${zombieDamage} health.`);
-    } else if (game.getPlayer().equipment.rangedWeapon) {
-        const ammoType = game.getPlayer().equipment.rangedWeapon?.ammoType;
-        if (ammoType && game.getPlayer().ammo?.[ammoType] != null && game.getPlayer().ammo[ammoType] > 0) {
-            const playerAmmo = game.getPlayer().ammo[ammoType];
-            if (playerAmmo != null && playerAmmo > 0) {
-                game.getPlayer().ammo[ammoType]--;
-                game.getPlayer().health.head -= Math.floor(zombieDamage / 2);
-                addMessage(`You fought the ${zombieType} zombie with your ${game.getPlayer().equipment.rangedWeapon?.name || 'your ranged weapon'}! You lost ${Math.floor(zombieDamage / 2)} health.`);
-            } else {
-                addMessage("You're out of ammo! Switching to melee combat.");
-                game.getPlayer().health.head -= zombieDamage;
-                addMessage(`You fought the ${zombieType} zombie with your ${game.getPlayer().equipment.meleeWeapon?.name || 'bare hands'}! You lost ${zombieDamage} health.`);
-            }
-            // Ensure rangedWeapon is not null before accessing its name
-            const rangedWeaponName = game.getPlayer().equipment.rangedWeapon?.name || 'your bare hands';
-            addMessage(`You fought the ${zombieType} zombie with your ${rangedWeaponName}! You lost ${Math.floor(zombieDamage / 2)} health.`);
-        } else {
-            addMessage("You're out of ammo! Switching to melee combat.");
-            game.getPlayer().health.head -= zombieDamage;
-            addMessage(`You fought the ${zombieType} zombie with your ${game.getPlayer().equipment.meleeWeapon?.name || 'bare hands'}! You lost ${zombieDamage} health.`);
-        }
-    } else {
-        game.getPlayer().health.head -= Math.floor(zombieDamage / 2);
-        addMessage(`You fought the ${zombieType} zombie with your ${game.getPlayer().equipment.meleeWeapon?.name || 'bare hands'}! You lost ${Math.floor(zombieDamage / 2)} health.`);
-    }
-
-    addMessage(`You dealt ${playerDamage} damage to the zombie.`);
-
-    game.getCurrentLocation().hasZombie = false;
-    addMessage("You defeated the zombie!");
-
-    if (game.getPlayer().health.head <= 0) {
-        addMessage("Game Over! You died.");
-        // Implement game over logic here
-    }
-
-    game.advanceTime(1); // Fighting takes 1 hour
 }
 
 function getRandomZombieType(): string {

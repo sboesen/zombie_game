@@ -24,7 +24,13 @@ export function updateUI(game: Game): void {
     if (statusEl) statusEl.innerHTML = updateStatusUI(game);
     if (healthStatusEl) healthStatusEl.innerHTML = updateHealthUI(game);
     if (inventoryEl) inventoryEl.innerHTML = updateInventoryUI(game);
-    if (actionsEl) actionsEl.innerHTML = updateActionsUI(game);
+    if (actionsEl) {
+        actionsEl.innerHTML = `
+            ${updateActionsUI(game)}
+            <button class="game-button shimmer bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded mb-4 w-full" onclick="game.useFirstAidKit()">Use First Aid Kit</button>
+            <button class="game-button shimmer bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded mb-4 w-full" onclick="game.useAntibiotics()">Use Antibiotics</button>
+        `;
+    }
     if (equipmentEl) equipmentEl.innerHTML = updateEquipmentUI(game);
 
     addButtonListeners();

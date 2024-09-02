@@ -12,18 +12,20 @@ export const weatherTypes: Weather[] = [
 ];
 
 export class WeatherSystem {
-    weather: string;
+    currentWeather: string;
 
     constructor() {
-        this.weather = 'Clear';
+        this.currentWeather = this.getRandomWeather();
+    }
+
+    getRandomWeather() {
+        const weatherTypes = ['Sunny', 'Rainy', 'Foggy', 'Stormy'];
+        return weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
     }
 
     changeWeather() {
-        const weatherTypes = ['Clear', 'Rain', 'Fog', 'Storm'];
-        this.weather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+        this.currentWeather = this.getRandomWeather();
     }
 
-    getWeather() {
-        return this.weather;
-    }
+    // ... other weather methods
 }
