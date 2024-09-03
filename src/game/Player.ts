@@ -1,33 +1,33 @@
-import { HealthSystem } from './health'; // Ensure this import is correct
-import { Item } from '../game/Item'; // Ensure Tool is imported
+import { HealthSystem } from './health';
+import { Item } from '../game/Item';
 import { Tool } from './Tool';
+import { FirstAidKit } from './FirstAidKit';
+import { addMessage } from '../utils/ui';
 
 export class Player {
-    health: HealthSystem; // Change this to HealthSystem
+    health: HealthSystem;
     defending: boolean = false;
-
     hunger: number;
     inventory: Item[];
     equipment: {
         meleeWeapon: Item | null;
         rangedWeapon: Item | null;
         armor: Item | null;
-        flashlight: Tool | null; // Add flashlight property
+        flashlight: Tool | null;
     };
     ammo: { [key: string]: number };
+    public experience: number = 0;
 
     constructor() {
-        this.health = new HealthSystem(); // Initialize as an instance of HealthSystem
+        this.health = new HealthSystem();
         this.hunger = 100;
         this.inventory = [];
         this.equipment = {
             meleeWeapon: null,
             rangedWeapon: null,
             armor: null,
-            flashlight: null // Initialize flashlight
+            flashlight: null
         };
         this.ammo = {};
     }
-
-    // ... other methods ...
 }

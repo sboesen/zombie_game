@@ -1,10 +1,9 @@
-export interface Item {
-    name: string;
-    type: string;
-    effect?: number; // Example property
-    durability?: number; // Optional for general items
-    maxDurability?: number; // Optional for general items
-    ammoType?: string; // Optional for weapons
-    description?: string; // Include description if needed
-    quantity?: number; // Optional for general items
+export class Item {
+    constructor(
+        public name: string,
+        public description: string,
+        public type: string,
+        public effect: number,
+        public quantity: number
+    ) {}
 }

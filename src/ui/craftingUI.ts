@@ -124,6 +124,13 @@ export function setupCraftingModal(game: Game): void {
         }
     });
 
+    // Add event listener for Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
+
     // Add event listeners for tab functionality
     const tablinks = document.querySelectorAll('.tablinks');
     tablinks.forEach(tab => {

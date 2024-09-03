@@ -9,36 +9,52 @@ import { Popover } from '../ui/Popover';
 const popover = new Popover();
 
 export function updateUI(game: Game): void {
-    const locationEl = document.getElementById("location") as HTMLElement;
+    console.log('updateUI called in ui.ts');
+
+    const locationEl = document.getElementById("location");
+    if (locationEl) {
+        locationEl.innerHTML = `
+            <h2 id="location-name" class="text-2xl font-bold mb-2 text-yellow-300">${game.getCurrentLocation().name}</h2>
+            <p id="location-description" class="text-gray-300">${game.getCurrentLocation().description}</p>
+            <ul id="items-list" class="mt-2"></ul>
+        `;
+
+        // Update items list
+        const itemsListEl = document.getElementById("items-list");
+        if (itemsListEl) {
+            itemsListEl.innerHTML = '';
+            game.getCurrentLocation().items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.name;
+                li.classList.add('text-gray-400');
+                itemsListEl.appendChild(li);
+            });
+        }
+    } else {
+        console.error('location element not found');
+    }
+
     const statusEl = document.getElementById("status") as HTMLElement;
     const healthStatusEl = document.getElementById("health-status") as HTMLElement;
     const inventoryEl = document.getElementById("inventory") as HTMLElement;
     const actionsEl = document.getElementById("actions") as HTMLElement;
     const equipmentEl = document.getElementById("equipment") as HTMLElement;
 
-    if (locationEl) locationEl.innerHTML = `
-        <h2 class="text-2xl font-bold mb-2 text-yellow-300">${game.getCurrentLocation().name}</h2>
-        <p class="text-gray-300">${game.getCurrentLocation().description}</p>
-    `;
-
     if (statusEl) statusEl.innerHTML = updateStatusUI(game);
-    if (healthStatusEl) healthStatusEl.innerHTML = updateHealthUI(game.getPlayer()); // This now works
+    if (healthStatusEl) healthStatusEl.innerHTML = updateHealthUI(game.getPlayer());
     if (inventoryEl) inventoryEl.innerHTML = updateInventoryUI(game);
-    if (actionsEl) {
-        actionsEl.innerHTML = `
-            ${updateActionsUI(game)}
-            <button class="game-button shimmer bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded mb-4 w-full" onclick="game.useFirstAidKit()">Use First Aid Kit</button>
-            <button class="game-button shimmer bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 px-4 rounded mb-4 w-full" onclick="game.useAntibiotics()">Use Antibiotics</button>
-        `;
-    }
+    if (actionsEl) actionsEl.innerHTML = updateActionsUI(game);
     if (equipmentEl) equipmentEl.innerHTML = updateEquipmentUI(game);
 
     addButtonListeners();
     addItemHoverListeners();
     addStatusHoverListeners();
+
+    console.log('updateUI completed');
 }
 
 export function addMessage(message: string): void {
+    console.log('addMessage called with message:', message);
     const messageLogEl = document.getElementById("message-log");
     if (messageLogEl) {
         const messageEl = document.createElement("p");

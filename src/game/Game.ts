@@ -6,11 +6,13 @@ import { CraftingRecipe } from './CraftingRecipe';
 import { craftingRecipes } from './Crafting';
 import { Weather, weatherTypes } from './Weather';
 import { addMessage, updateUI, shakeButton, updateCraftingMenu } from '../utils/ui'; // Ensure these imports are correct
-import { FirstAidKit, useFirstAidKit } from './FirstAidKit'; // Import FirstAidKit
+import { FirstAidKit } from './FirstAidKit'; // Import FirstAidKit
 import { toggleFlashlight } from './Actions';
 import { updateActionsUI } from '../ui/actionsUI';
 import { updateInventoryUI } from '../ui/inventoryUI';
 import { Tool } from './Tool';
+import { renderFightUI, updateFightUI } from '../utils/fightUI';
+import { Map } from './Map';
 
 export class Game {
     private player: Player;
@@ -24,6 +26,7 @@ export class Game {
     private isInFightMode: boolean = false;
     private currentZombie: Zombie | null = null;
     private fightLoop: (() => void) | null = null;
+    private map: Map;
 
     constructor() {
         this.player = new Player();
@@ -31,6 +34,7 @@ export class Game {
         this.currentLocation = this.locations[0];
         this.craftingRecipes = craftingRecipes;
         this.currentWeather = this.getRandomWeather(); // Initialize weather
+        this.map = new Map(this.locations);
 
         updateUI(this);
     }
@@ -38,13 +42,13 @@ export class Game {
     private applyTimeEffects() {
         if (this.time >= 22 || this.time < 6) {
             // Night time effects
-            this.currentLocation.hasZombie = Math.random() < 0.3; // 30% chance of zombie encounter at night
+            this.currentLocation.zombieChance = 0.3; // 30% chance of zombie encounter at night
             if (!this.flashlightOn) {
                 addMessage("It's dark. You might want to use your flashlight.");
             }
         } else {
             // Day time effects
-            this.currentLocation.hasZombie = Math.random() < 0.1; // 10% chance of zombie encounter during the day
+            this.currentLocation.zombieChance = 0.1; // 10% chance of zombie encounter during the day
         }
 
         if (['Rainy', 'Stormy'].includes(this.currentWeather.type) && Math.random() < 0.2) {
@@ -90,11 +94,83 @@ export class Game {
     }
 
     public move(): void {
-        // Implement movement logic
+        console.log('Move method started');
+
+        const newLocation = this.map.getRandomLocation(this.currentLocation);
+        console.log('New location selected:', newLocation.name);
+
+        this.currentLocation = newLocation;
+        console.log('Current location updated');
+
+        addMessage(`You moved to ${newLocation.name}.`);
+        console.log('Message added');
+
+        console.log('Calling updateUI');
+        this.updateUI();
+        console.log('updateUI completed');
+
+        console.log('Checking for zombies');
+        this.checkForZombies();
+        console.log('Zombie check completed');
+
+        let moveTime = 2;
+        if (this.currentWeather.type === 'Rainy') moveTime = 3;
+        if (this.currentWeather.type === 'Stormy') moveTime = 4;
+        console.log('Move time calculated:', moveTime);
+
+        console.log('Advancing time');
+        this.advanceTime(moveTime);
+        console.log('Time advanced');
+
+        if (['Rainy', 'Stormy'].includes(this.currentWeather.type) && Math.random() < 0.2) {
+            console.log('Bad weather effect triggered');
+            this.player.health.takeDamage(5);
+            addMessage("You've caught a cold from the bad weather. [-5 Health]");
+        }
+
+        console.log('Move method completed');
     }
 
     public fight(): void {
-        // Implement fight logic
+        if (this.isInFightMode) return; // Don't start a new fight if already in one
+
+        
+        const zombie = this.getCurrentLocation().getRandomZombie(); // Create a new zombie
+        this.setCurrentZombie(zombie);
+        this.isInFightMode = true;
+
+        addMessage(`A ${zombie.type} zombie appears! Prepare for battle!`);
+
+        // Render the fight UI
+        renderFightUI(this.player, zombie);
+
+        // Set up the fight loop
+        const fightLoop = () => {
+            if (this.player.health.getOverallHealth() <= 0) {
+                this.gameOver();
+                return;
+            }
+
+            if (zombie.health <= 0) {
+                addMessage("You've defeated the zombie!");
+                this.player.experience += zombie.experienceReward;
+                addMessage(`You gained ${zombie.experienceReward} experience.`);
+                this.resumeNormalGameplay();
+                return;
+            }
+
+            // Update the fight UI
+            updateFightUI(this.player, zombie);
+
+            // The fight continues...
+            setTimeout(() => {
+                if (this.isInFightMode) {
+                    this.fightLoop?.();
+                }
+            }, 1000); // 1 second delay between rounds
+        };
+
+        this.setFightMode(true, fightLoop);
     }
 
     public gameOver(): void {
@@ -191,12 +267,20 @@ export class Game {
             } else if (item.name === 'Flashlight') {
                 const flashlight = item as Tool; // Cast to Tool
                 toggleFlashlight(this, flashlight); // Now this should work
-            } else if (item.type === 'medical') {
-                const result = useFirstAidKit(this.player, 'head'); // Pass the body part name as a string
-                if (result) {
-                    this.advanceTime(1); // Only advance time if healing was successful
-                }
+            } else if (item.name === 'First Aid Kit') {
+                const healAmount = 50; // Adjust this value as needed
+                const healedAmount = this.player.health.heal(healAmount);
+                this.player.inventory.splice(itemIndex, 1);
+                addMessage(`You used a First Aid Kit. Healed [+${healedAmount}] health.`);
+                this.advanceTime(1); // Using a First Aid Kit takes 1 hour
+            } else if (item.name === 'Antibiotics') {
+                // Implement antibiotics effect here
+                this.player.inventory.splice(itemIndex, 1);
+                addMessage(`You used Antibiotics. Your immune system is strengthened.`);
+                this.advanceTime(0.5); // Using Antibiotics takes 30 minutes
             }
+        } else {
+            addMessage(`You don't have a ${itemName} in your inventory.`);
         }
         updateUI(this);
     }
@@ -228,6 +312,7 @@ export class Game {
     }
 
     public talkToNPC(): void {
+        console.log('talkToNPC called');
         const npc = this.currentLocation.npc;
         if (npc) {
             addMessage(`${npc.name} says: "${npc.dialogue}"`);
@@ -275,12 +360,63 @@ export class Game {
         document.getElementById('crafting-modal')?.classList.add('hidden');
     }
 
-    public updateUI(): void {
-        console.log('updateUI called'); // Add this line
-        document.getElementById('actions')!.innerHTML = updateActionsUI(this);
-        document.getElementById('inventory')!.innerHTML = updateInventoryUI(this);
-        console.log('Calling updateCraftingMenu'); // Add this line
-        updateCraftingMenu(this.player.inventory.map(item => item.name.toLowerCase())); // Update crafting menu
+    public updateUI(message?: string): void {
+        console.log('updateUI called');
+        
+        const locationNameElement = document.getElementById('location-name');
+        const locationDescriptionElement = document.getElementById('location-description');
+        const itemsListElement = document.getElementById('items-list');
+        const actionsElement = document.getElementById('actions');
+        const inventoryElement = document.getElementById('inventory');
+
+        if (locationNameElement) {
+            locationNameElement.textContent = this.currentLocation.name;
+        } else {
+            console.error('location-name element not found');
+        }
+
+        if (locationDescriptionElement) {
+            locationDescriptionElement.textContent = this.currentLocation.description;
+        } else {
+            console.error('location-description element not found');
+        }
+
+        if (itemsListElement) {
+            itemsListElement.innerHTML = '';
+            this.currentLocation.items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.name;
+                itemsListElement.appendChild(li);
+            });
+        } else {
+            console.error('items-list element not found');
+        }
+
+        if (message) {
+            const messageElement = document.getElementById('message');
+            if (messageElement) {
+                messageElement.textContent = message;
+            } else {
+                console.error('message element not found');
+            }
+        }
+
+        if (actionsElement) {
+            actionsElement.innerHTML = updateActionsUI(this);
+        } else {
+            console.error('actions element not found');
+        }
+
+        if (inventoryElement) {
+            inventoryElement.innerHTML = updateInventoryUI(this);
+        } else {
+            console.error('inventory element not found');
+        }
+
+        console.log('Calling updateCraftingMenu');
+        updateCraftingMenu(this.player.inventory.map(item => item.name.toLowerCase()));
+
+        console.log('updateUI completed');
     }
 
     getCurrentLocation(): GameLocation {
@@ -295,6 +431,14 @@ export class Game {
     // Method to set the flashlight state
     public setFlashlightOn(state: boolean): void {
         this.flashlightOn = state;
+    }
+
+    checkForZombies(): void {
+        if (Math.random() < this.currentLocation.zombieChance) {
+            this.fight();
+        } else {
+            addMessage("The area seems clear for now.");
+        }
     }
 }
 

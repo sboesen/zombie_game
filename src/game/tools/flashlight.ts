@@ -5,5 +5,6 @@ export const flashlight: Tool = {
     type: "tool",
     durability: 5,
     description: "A handheld light source",
-    quantity: 1
+    quantity: 1,
+    effect: 100
 };

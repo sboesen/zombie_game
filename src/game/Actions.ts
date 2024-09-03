@@ -22,7 +22,7 @@ export function fight(game: Game): void {
     const zombieType = getRandomZombieType();
     const zombieHealth = getZombieHealth(zombieType);
     const zombieDamage = getZombieDamage(zombieType);
-    const zombie = new Zombie(zombieType, zombieHealth, zombieDamage);
+    const zombie = new Zombie(zombieType, zombieHealth, zombieDamage, 10);
     
     game.setCurrentZombie(zombie); // Add this method to the Game class
     renderFightUI(player, zombie);
