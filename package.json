@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "npm run build:css && webpack --mode production",
     "start": "webpack --mode development --watch",
     "build:css": "gulp"
   },
