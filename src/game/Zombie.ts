@@ -1,15 +1,24 @@
+import { HealthSystem } from './health';
+import { ZombieType } from './ZombieType';
+
 export class Zombie {
-    constructor(
-        public type: string,
-        public health: number,
-        public baseDamage: number,
-        public experienceReward: number
-    ) {
-        this.experienceReward = Math.floor(Math.random() * 20) + 10; // Random experience between 10-30
+    healthSystem: HealthSystem;
+    type: ZombieType;
+    damage: number;
+
+    constructor(type: ZombieType) {
+        this.type = type;
+        this.healthSystem = new HealthSystem(type.getHealth());
+        this.damage = type.getDamage();
     }
 
-    attack(): number {
-        // Add some randomness to the zombie's attack
-        return this.baseDamage + Math.floor(Math.random() * 3);
+    experienceReward(): number {
+        return this.type.experienceReward;
     }
+
+    isAlive(): boolean {
+        return this.healthSystem.isAlive();
+    }
+
+    // ... (keep other methods unchanged)
 }

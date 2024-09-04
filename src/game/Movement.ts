@@ -10,7 +10,7 @@ export function move(game: Game): void {
     addMessage(`You moved to ${newLocation.name}.`);
     game.getPlayer().hunger = Math.max(0, game.getPlayer().hunger - 10); // Decrease hunger by 10
     if (game.getPlayer().hunger === 0) {
-        const headPart = game.getPlayer().health.getBodyPart('head');
+        const headPart = game.getPlayer().healthSystem.getBodyPart('head');
         if (headPart) {
             headPart.health -= 10;
             addMessage("You're starving! You lost 10 health.");
@@ -24,7 +24,7 @@ export function move(game: Game): void {
     game.advanceTime(moveTime);
 
     if (['Rainy', 'Stormy'].includes(game.getCurrentWeather().type) && Math.random() < 0.2) {
-        const headPart = game.getPlayer().health.getBodyPart('head');
+        const headPart = game.getPlayer().healthSystem.getBodyPart('head');
         if (headPart) {
             headPart.health -= 5;
             addMessage("You've caught a cold from the bad weather. [-5 Health]");
@@ -33,7 +33,7 @@ export function move(game: Game): void {
 }
 
 export function rest(player: Player) {
-    const headPart = player.health.getBodyPart('head');
+    const headPart = player.healthSystem.getBodyPart('head');
     if (headPart && headPart.health > 0) {
         // ... existing rest logic ...
     } else {
@@ -42,7 +42,7 @@ export function rest(player: Player) {
 }
 
 function someFunction(player: Player) {
-    const head = player.health.getBodyPart('Head'); // Access the head body part
+    const head = player.healthSystem.getBodyPart('head');
     if (head) {
         console.log(`Head health: ${head.health}`);
     } else {
@@ -52,9 +52,9 @@ function someFunction(player: Player) {
 
 export class Movement {
     static getMovementSpeed(player: Player): number {
-        const health = player.health;
-        const leftLeg = health.getBodyPart('leftLeg');
-        const rightLeg = health.getBodyPart('rightLeg');
+        const healthSystem = player.healthSystem;
+        const leftLeg = healthSystem.getBodyPart('leftLeg');
+        const rightLeg = healthSystem.getBodyPart('rightLeg');
 
         let speed = 100; // Base speed
 
@@ -69,44 +69,5 @@ export class Movement {
         }
 
         return speed;
-    }
-
-    static getClimbingAbility(player: Player): number {
-        const health = player.health;
-        const leftArm = health.getBodyPart('leftArm');
-        const rightArm = health.getBodyPart('rightArm');
-
-        let ability = 100; // Base climbing ability
-
-        if (leftArm.health < 50 || rightArm.health < 50) {
-            ability *= 0.5; // Halve climbing ability if either arm is badly injured
-        } else if (leftArm.health < 75 || rightArm.health < 75) {
-            ability *= 0.75; // Reduce climbing ability by 25% if either arm is moderately injured
-        }
-
-        if (leftArm.bleeding || rightArm.bleeding) {
-            ability *= 0.8; // Further reduce climbing ability by 20% if bleeding
-        }
-
-        return ability;
-    }
-
-    static getSwimmingAbility(player: Player): number {
-        const health = player.health;
-        const torso = health.getBodyPart('torso');
-
-        let ability = 100; // Base swimming ability
-
-        if (torso.health < 50) {
-            ability *= 0.5; // Halve swimming ability if torso is badly injured
-        } else if (torso.health < 75) {
-            ability *= 0.75; // Reduce swimming ability by 25% if torso is moderately injured
-        }
-
-        if (torso.bleeding) {
-            ability *= 0.8; // Further reduce swimming ability by 20% if bleeding
-        }
-
-        return ability;
     }
 }

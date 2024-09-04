@@ -1,4 +1,5 @@
 import { addMessage } from '../utils/ui';
+import { ZombieHealth } from './ZombieType';
 
 export interface BodyPart {
     name: string;
@@ -9,22 +10,32 @@ export interface BodyPart {
 }
 
 export class HealthSystem {
-    head: number;
-    torso: number;
-    leftArm: number;
-    rightArm: number;
-    leftLeg: number;
-    rightLeg: number;
+    head!: number;
+    torso!: number;
+    leftArm!: number;
+    rightArm!: number;
+    leftLeg!: number;
+    rightLeg!: number;
     bleeding: { [key: string]: boolean };
     infected: { [key: string]: boolean };
+    maxHealth: { [key: string]: number };
 
-    constructor() {
-        this.head = 100;
-        this.torso = 100;
-        this.leftArm = 100;
-        this.rightArm = 100;
-        this.leftLeg = 100;
-        this.rightLeg = 100;
+    constructor(zombieHealth?: ZombieHealth) {
+        this.maxHealth = {
+            head: 100,
+            torso: 100,
+            leftArm: 100,
+            rightArm: 100,
+            leftLeg: 100,
+            rightLeg: 100
+        };
+
+        if (zombieHealth) {
+            this.initializeZombieHealth(zombieHealth);
+        } else {
+            this.initializeDefaultHealth();
+        }
+
         this.bleeding = {
             head: false,
             torso: false,
@@ -33,14 +44,21 @@ export class HealthSystem {
             leftLeg: false,
             rightLeg: false
         };
-        this.infected = {
-            head: false,
-            torso: false,
-            leftArm: false,
-            rightArm: false,
-            leftLeg: false,
-            rightLeg: false
-        };
+        this.infected = { ...this.bleeding };
+    }
+
+    private initializeZombieHealth(zombieHealth: ZombieHealth): void {
+        for (const [part, health] of Object.entries(zombieHealth)) {
+            const randomHealth = Math.floor(Math.random() * (health.max - health.min + 1)) + health.min;
+            this[part as keyof HealthSystem] = randomHealth;
+            this.maxHealth[part] = randomHealth;
+        }
+    }
+
+    private initializeDefaultHealth(): void {
+        for (const part of Object.keys(this.maxHealth)) {
+            (this as any)[part] = this.maxHealth[part];
+        }
     }
 
     getOverallHealth(): number {
@@ -65,7 +83,7 @@ export class HealthSystem {
         return {
             name: part,
             health: health,
-            maxHealth: 100,
+            maxHealth: this.maxHealth[part],
             infected: this.infected[part],
             bleeding: this.bleeding[part]
         };
@@ -73,12 +91,12 @@ export class HealthSystem {
 
     heal(amount: number): number {
         const oldHealth = this.getOverallHealth();
-        this.head = Math.min(100, this.head + amount);
-        this.torso = Math.min(100, this.torso + amount);
-        this.leftArm = Math.min(100, this.leftArm + amount);
-        this.rightArm = Math.min(100, this.rightArm + amount);
-        this.leftLeg = Math.min(100, this.leftLeg + amount);
-        this.rightLeg = Math.min(100, this.rightLeg + amount);
+        for (const part of Object.keys(this.maxHealth)) {
+            this[part as keyof HealthSystem] = Math.min(
+                this.maxHealth[part],
+                (this[part as keyof HealthSystem] as number) + amount
+            ) as any;
+        }
         const newHealth = this.getOverallHealth();
         return newHealth - oldHealth;
     }
@@ -114,5 +132,13 @@ export class HealthSystem {
 
     getCurrentHealth(): number {
         return this.getOverallHealth();
+    }
+
+    isAlive(): boolean {
+        return this.torso > 0;
+    }
+
+    isPlayerAlive(): boolean {
+        return this.torso > 0 && this.head > 0;
     }
 }

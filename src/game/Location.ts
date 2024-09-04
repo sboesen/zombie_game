@@ -1,44 +1,97 @@
 import { NPC } from "../game/NPC";
 import { Item } from "./Item";
 import { Zombie } from './Zombie';
+import { ZombieType } from './ZombieType';
+import { ZombieSpawnConfig } from './ZombieSpawnConfig';
 
 export class GameLocation {
     name: string;
     description: string;
-    dangerLevel: number; // 1-10, affects zombie strength
-    zombieTypes: string[]; // Types of zombies that can appear in this location
-    items: Item[];
+    dangerLevel: number;
+    zombieSpawnConfigs: ZombieSpawnConfig[];
+    currentZombies: Zombie[];
+    currentItems: Item[];
     npc: NPC | null;
-    hasZombie: boolean;
-    zombieChance: number;
+    private dayZombieChance: number;
+    private nightZombieChance: number;
 
     constructor(
         name: string, 
         description: string, 
         dangerLevel: number, 
-        zombieTypes: string[], 
+        zombieSpawnConfigs: ZombieSpawnConfig[], 
         items: Item[],
-        npc: NPC | null = null,
-        hasZombie: boolean = false,
-        zombieChance: number = 0.2
+        dayZombieChance: number,
+        nightZombieChance: number,
+        npc: NPC | null = null
     ) {
         this.name = name;
         this.description = description;
         this.dangerLevel = dangerLevel;
-        this.zombieTypes = zombieTypes;
-        this.items = items;
+        this.zombieSpawnConfigs = zombieSpawnConfigs;
+        this.currentItems = [...items];
+        this.currentZombies = [];
+        this.dayZombieChance = dayZombieChance;
+        this.nightZombieChance = nightZombieChance;
         this.npc = npc;
-        this.hasZombie = hasZombie;
-        this.zombieChance = zombieChance;
     }
 
-    public getRandomZombie(): Zombie {
-        const type = this.zombieTypes[Math.floor(Math.random() * this.zombieTypes.length)];
-        const health = 30 + (this.dangerLevel * 10);
-        const damage = 5 + (this.dangerLevel * 2);
-        const experienceReward = 10 + (this.dangerLevel * 5);
+    public hasZombies(): boolean {
+        return this.currentZombies.length > 0;
+    }
 
-        return new Zombie(type, health, damage, experienceReward);
+    public attemptZombieSpawn(isNight: boolean): void {
+        const spawnChance = isNight ? this.nightZombieChance : this.dayZombieChance;
+        if (Math.random() < spawnChance) {
+            this.spawnRandomZombie();
+        }
+    }
+
+    private spawnRandomZombie(): void {
+        const config = this.zombieSpawnConfigs[Math.floor(Math.random() * this.zombieSpawnConfigs.length)];
+        if (Math.random() < config.chance) {
+            const count = Math.floor(Math.random() * 2) + 1; // Spawn 1 or 2 zombies
+            for (let i = 0; i < count; i++) {
+                this.currentZombies.push(new Zombie(config.type));
+            }
+        }
+    }
+
+    public spawnInitialZombies(): void {
+        for (const config of this.zombieSpawnConfigs) {
+            if (Math.random() < config.chance) {
+                const count = Math.floor(Math.random() * (config.maxCount - config.minCount + 1)) + config.minCount;
+                for (let i = 0; i < count; i++) {
+                    this.currentZombies.push(new Zombie(config.type));
+                }
+            }
+        }
+    }
+
+    public getZombies(): Zombie[] {
+        return this.currentZombies;
+    }
+
+    public removeZombie(zombie: Zombie): void {
+        const index = this.currentZombies.indexOf(zombie);
+        if (index > -1) {
+            this.currentZombies.splice(index, 1);
+        }
+    }
+
+    public addItem(item: Item): void {
+        this.currentItems.push(item);
+    }
+
+    public removeItem(item: Item): void {
+        const index = this.currentItems.indexOf(item);
+        if (index > -1) {
+            this.currentItems.splice(index, 1);
+        }
+    }
+
+    public getItems(): Item[] {
+        return this.currentItems;
     }
 
     // ... other methods ...

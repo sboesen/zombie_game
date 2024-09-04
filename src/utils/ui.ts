@@ -23,7 +23,7 @@ export function updateUI(game: Game): void {
         const itemsListEl = document.getElementById("items-list");
         if (itemsListEl) {
             itemsListEl.innerHTML = '';
-            game.getCurrentLocation().items.forEach(item => {
+            game.getCurrentLocation().getItems().forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.name;
                 li.classList.add('text-gray-400');

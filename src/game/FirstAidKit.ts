@@ -20,10 +20,10 @@ export class FirstAidKit implements Item {
     }
 
     use(player: Player) {
-        const currentHealth = player.health.getCurrentHealth();
+        const currentHealth = player.healthSystem.getCurrentHealth();
         if (currentHealth < 100) {
             const healAmount = Math.min(50, 100 - currentHealth);
-            player.health.heal(healAmount);
+            player.healthSystem.heal(healAmount);
             player.hunger = Math.max(0, player.hunger - 10);
             // Remove the thirst property as it doesn't exist on Player
             // ... any other effects
@@ -34,11 +34,11 @@ export class FirstAidKit implements Item {
 
     useOn(player: Player, bodyPart: string): boolean {
         if (this.uses > 0) {
-            const part = player.health.getBodyPart(bodyPart);
+            const part = player.healthSystem.getBodyPart(bodyPart);
             if (part) {
-                player.health.healBodyPart(bodyPart, 50);
-                player.health.cureInfection(bodyPart);
-                player.health.stopBleeding(bodyPart);
+                player.healthSystem.healBodyPart(bodyPart, 50);
+                player.healthSystem.cureInfection(bodyPart);
+                player.healthSystem.stopBleeding(bodyPart);
                 this.uses--;
                 addMessage(`Applied First Aid Kit to ${bodyPart}. [+50 Health]`);
                 return true;
