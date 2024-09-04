@@ -17,7 +17,7 @@ export class Zombie {
     }
 
     isAlive(): boolean {
-        return this.healthSystem.isAlive();
+        return this.healthSystem.isZombieAlive();
     }
 
     // ... (keep other methods unchanged)

@@ -134,8 +134,8 @@ export class HealthSystem {
         return this.getOverallHealth();
     }
 
-    isAlive(): boolean {
-        return this.torso > 0;
+    isZombieAlive(): boolean {
+        return this.head > 0;
     }
 
     isPlayerAlive(): boolean {
