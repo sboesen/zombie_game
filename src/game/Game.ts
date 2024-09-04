@@ -13,6 +13,9 @@ import { updateInventoryUI } from '../ui/inventoryUI';
 import { Tool } from './Tool';
 import { renderFightUI, updateFightUI } from '../ui/fightUI';
 import { Map } from './Map';
+import { Item } from './Item';
+import { showVictoryModal } from '../ui/victoryModal';
+import { ZombieType } from './ZombieType';
 
 export class Game {
     private player: Player;
@@ -27,6 +30,7 @@ export class Game {
     private currentZombie: Zombie | null = null;
     private fightLoop: (() => void) | null = null;
     private map: Map;
+    private isHandlingZombieDefeat: boolean = false;
 
     constructor() {
         this.player = new Player();
@@ -70,7 +74,68 @@ export class Game {
             this.currentWeather = this.getRandomWeather();
             addMessage(`The weather has changed: ${this.currentWeather.description}`);
         }
+        this.checkForZombies(hours);
         updateUI(this);
+    }
+
+    checkForZombies(hours: number) {
+        const spawnChance = 0.1 * hours; // 10% chance per hour
+        
+        if (Math.random() < spawnChance) {
+            const zombieType = this.getRandomZombieType();
+            const newZombie = new Zombie(zombieType);
+            this.currentLocation.addZombie(newZombie);
+            
+            addMessage(`A ${zombieType} zombie has appeared!`);
+            this.fight(); // Initiate fight immediately when a zombie spawns
+        } else {
+            console.log("No zombies spawned during this time period.");
+        }
+    }
+
+    private getRandomZombieType(): ZombieType {
+        const types = [ZombieType.CRAWLER, ZombieType.WALKER, ZombieType.BLOATER];
+        return types[Math.floor(Math.random() * types.length)];
+    }
+
+    public fight(): void {
+        if (this.isInFightMode) return;
+
+        const zombies = this.currentLocation.getZombies();
+        if (zombies.length === 0) {
+            addMessage("No zombies to fight here.");
+            return;
+        }
+
+        const zombie = zombies[0]; // Get the first zombie
+        this.setCurrentZombie(zombie);
+        this.isInFightMode = true;
+
+        addMessage(`A ${zombie.type.name} zombie appears! Prepare for battle!`);
+
+        renderFightUI(this.player, zombie);
+
+        const fightLoop = () => {
+            if (this.player.healthSystem.getCurrentHealth() <= 0) {
+                addMessage("You have been defeated. Game over.");
+                this.gameOver();
+                return;
+            }
+            
+            if (zombie.healthSystem.getCurrentHealth() <= 0) {
+                this.handleZombieDefeat(zombie);
+                return;
+            }
+            
+            updateFightUI(this.player, zombie);
+
+            if (this.isInFightMode) {
+                requestAnimationFrame(fightLoop);
+            }
+        };
+
+        this.setFightMode(true, fightLoop);
+        fightLoop(); // Start the fight loop
     }
 
     public search(): void {
@@ -106,10 +171,6 @@ export class Game {
         this.updateUI();
         console.log('updateUI completed');
 
-        console.log('Checking for zombies');
-        this.checkForZombies();
-        console.log('Zombie check completed');
-
         let moveTime = 2;
         if (this.currentWeather.type === 'Rainy') moveTime = 3;
         if (this.currentWeather.type === 'Stormy') moveTime = 4;
@@ -126,64 +187,6 @@ export class Game {
         }
 
         console.log('Move method completed');
-    }
-
-    public fight(): void {
-        if (this.isInFightMode) return;
-
-        const player = this.getPlayer();
-        const location = this.getCurrentLocation();
-
-        // Attempt to spawn zombies
-        const isNight = this.time >= 22 || this.time < 6;
-        location.attemptZombieSpawn(isNight);
-
-        // Check again if there are zombies after the spawn attempt
-        if (!location.hasZombies()) {
-            addMessage("No zombies appeared. The area seems safe for now.");
-            return;
-        }
-
-        // Get the first zombie from the location
-        const zombie = location.getZombies()[0];
-        this.setCurrentZombie(zombie);
-        this.isInFightMode = true;
-
-        addMessage(`A ${zombie.type.name} zombie appears! Prepare for battle!`);
-
-        renderFightUI(player, zombie);
-
-        const fightLoop = () => {
-            if (player.healthSystem.getCurrentHealth() <= 0) {
-                addMessage("You have been defeated. Game over.");
-                this.gameOver();
-                return;
-            }
-            
-            if (zombie.healthSystem.getCurrentHealth() <= 0) {
-                addMessage(`You have defeated the ${zombie.type.name} zombie!`);
-                this.player.experience += zombie.experienceReward();
-                addMessage(`You gained ${zombie.experienceReward()} experience.`);
-                location.removeZombie(zombie);
-                this.resumeNormalGameplay();
-                return;
-            }
-            
-            updateFightUI(player, zombie);
-
-            setTimeout(() => {
-                if (this.isInFightMode) {
-                    this.fightLoop?.();
-                }
-            }, 1000);
-        };
-
-        this.setFightMode(true, fightLoop);
-    }
-
-    private getRandomZombieType(): string {
-        const zombieTypes = ['Normal', 'Fast', 'Strong'];
-        return zombieTypes[Math.floor(Math.random() * zombieTypes.length)];
     }
 
     private getZombieHealth(zombieType: string): number {
@@ -454,11 +457,57 @@ export class Game {
         this.flashlightOn = state;
     }
 
-    checkForZombies(): void {
-        if (this.currentLocation.hasZombies()) {
-            this.fight();
-        } else {
-            addMessage("The area seems clear for now.");
+    public handleZombieDefeat(zombie: Zombie): void {
+        console.log('handleZombieDefeat called');
+        if (this.isHandlingZombieDefeat) return;
+        this.isHandlingZombieDefeat = true;
+
+        const loot = this.generateLoot(zombie);
+        const xpGained = this.calculateXP(zombie);
+
+        // Add loot to player's inventory
+        this.player.addItems(loot);
+
+        // Add XP to player
+        this.player.addXP(xpGained);
+
+        // Remove the defeated zombie from the current location
+        this.currentLocation.removeZombie(zombie);
+
+        // Show the victory modal
+        showVictoryModal(this.player, zombie, loot, xpGained);
+
+        // Update the game UI
+        this.updateUI();
+
+        this.isHandlingZombieDefeat = false;
+    }
+
+    private generateLoot(zombie: Zombie): Item[] {
+        // Implement loot generation logic here
+        // This is a simple example; you might want to make this more complex
+        const lootChance = Math.random();
+        if (lootChance < 0.7) { // 70% chance to get loot
+            return [new Item("Zombie Flesh", "A piece of rotting zombie flesh.", "misc", 1, 1)];
+        } else if (lootChance < 0.9) { // 20% chance to get better loot
+            return [new Item("Bandage", "A simple bandage to stop bleeding.", "medical", 10, 1)];
+        } else { // 10% chance to get rare loot
+            return [new Item("First Aid Kit", "A complete first aid kit.", "medical", 50, 1)];
+        }
+    }
+
+    private calculateXP(zombie: Zombie): number {
+        // Implement XP calculation logic here
+        // This is a simple example; you might want to make this more complex
+        switch (zombie.type) {
+            case ZombieType.CRAWLER:
+                return 10;
+            case ZombieType.WALKER:
+                return 20;
+            case ZombieType.BLOATER:
+                return 30;
+            default:
+                return 5;
         }
     }
 }

@@ -54,7 +54,7 @@ export function renderFightUI(player: Player, zombie: Zombie): void {
                     ${createHealthDisplay(player)}
                 </div>
                 <div id="zombie-stats" class="w-1/2 pl-4">
-                    <h3 class="text-2xl font-bold mb-2 text-gray-300">${zombie.type} Zombie</h3>
+                    <h3 class="text-2xl font-bold mb-2 text-gray-300">${zombie.type.name} Zombie</h3>
                     ${createHealthDisplay(zombie)}
                 </div>
             </div>
@@ -93,29 +93,27 @@ export function updateFightUI(player: Player, zombie: Zombie): void {
     
     if (zombieStatsEl) {
         zombieStatsEl.innerHTML = `
-            <h3 class="text-2xl font-bold mb-2 text-gray-300">${zombie.type} Zombie</h3>
+            <h3 class="text-2xl font-bold mb-2 text-gray-300">${zombie.type.name} Zombie</h3>
             ${createHealthDisplay(zombie)}
         `;
     }
 
-    checkFightEndConditions(player, zombie);
+    if (!isFightEnding) {
+        checkFightEndConditions(player, zombie);
+    }
 }
 
 function checkFightEndConditions(player: Player, zombie: Zombie): void {
-    if (!zombie.healthSystem.isZombieAlive()) {
+    if (!zombie.healthSystem.isZombieAlive() && !isFightEnding) {
+        isFightEnding = true;
         addCombatMessage("You have defeated the zombie!");
-        setTimeout(() => {
-            endFight();
-            // Call a function to handle fight victory (e.g., give rewards, update game state)
-            handleFightVictory(player, zombie);
-        }, 1500); // Delay to allow the player to see the victory message
-    } else if (!player.healthSystem.isPlayerAlive()) {
+        endFight();
+        window.game.handleZombieDefeat(zombie);
+    } else if (!player.healthSystem.isPlayerAlive() && !isFightEnding) {
+        isFightEnding = true;
         addCombatMessage("You have been defeated by the zombie!");
-        setTimeout(() => {
-            endFight();
-            // Call a function to handle player defeat (e.g., game over screen)
-            handlePlayerDefeat();
-        }, 1500); // Delay to allow the player to see the defeat message
+        endFight();
+        handlePlayerDefeat();
     }
 }
 
@@ -135,19 +133,18 @@ export function endFight(): void {
     if (fightContainer) {
         fightContainer.remove();
     }
+    isFightEnding = false;
+    window.game.resumeNormalGameplay();
 }
+
+// Remove the handleFightVictory function, as we're now calling handleZombieDefeat directly
 
 // Add these functions to handle fight outcomes
-function handleFightVictory(player: Player, zombie: Zombie): void {
-    // Implement victory logic here (e.g., give XP, loot, update game state)
-    console.log("Fight victory handled");
-    // You might want to call a function from your main game logic here
-    // For example: window.game.handleZombieDefeat(zombie);
-}
-
 function handlePlayerDefeat(): void {
     // Implement defeat logic here (e.g., show game over screen, restart game)
     console.log("Player defeat handled");
     // You might want to call a function from your main game logic here
     // For example: window.game.gameOver();
 }
+
+let isFightEnding = false;

@@ -94,5 +94,9 @@ export class GameLocation {
         return this.currentItems;
     }
 
+    public addZombie(zombie: Zombie): void {
+        this.currentZombies.push(zombie);
+    }
+
     // ... other methods ...
 }

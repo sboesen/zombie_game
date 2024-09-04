@@ -16,6 +16,8 @@ export class Player { // Implementing the Player interface
     };
     ammo: { [key: string]: number };
     public experience: number = 0;
+    public xp: number = 0; // Added xp property
+    public level: number = 1; // Added level property
 
     constructor() {
         this.healthSystem = new HealthSystem(); // Initialize HealthSystem
@@ -46,5 +48,25 @@ export class Player { // Implementing the Player interface
 
     isAlive(): boolean {
         return this.healthSystem.isPlayerAlive();
+    }
+
+    public addItems(items: Item[]): void {
+        this.inventory.push(...items);
+    }
+
+    public addXP(xp: number): void {
+        this.xp += xp;
+        // You might want to add level-up logic here
+        this.checkLevelUp();
+    }
+
+    private checkLevelUp(): void {
+        // Implement level-up logic here
+        // For example:
+        const xpNeededForNextLevel = this.level * 100; // Simple formula, adjust as needed
+        if (this.xp >= xpNeededForNextLevel) {
+            this.level++;
+            // You might want to increase player stats here
+        }
     }
 }
