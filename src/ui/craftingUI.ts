@@ -50,8 +50,7 @@ function createRecipeRows(recipes: CraftingRecipe[], playerInventory: Item[]): s
             const hasEnough = item && item.quantity !== undefined && item.quantity >= component.quantity;
             const itemData = items.find(i => i.name === component.name);
             const description = itemData ? itemData.description : 'No description available';
-            const farmLocation = itemData ? itemData.farmLocation : 'Unknown location';
-            return `<span class="${hasEnough ? 'text-green-500' : 'text-red-500'}" title="${description}\nFarm: ${farmLocation}">${component.quantity}x ${component.name}</span>`;
+            return `<span class="${hasEnough ? 'text-green-500' : 'text-red-500'}" title="${description}">${component.quantity}x ${component.name}</span>`;
         }).join(', ');
 
         return `

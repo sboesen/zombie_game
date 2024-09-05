@@ -10,8 +10,8 @@ export const locations: GameLocation[] = [
         5,
         [{ type: ZombieType.WALKER, chance: 0.5, minCount: 1, maxCount: 3 }],
         [
-            new Item("Canned Food", "A can of non-perishable food.", "food", 20, 1),
-            new Item("Bandage", "A sterile bandage for treating wounds.", "medical", 10, 2)
+            new Item("Canned Food", "A can of non-perishable food.", "food", 20, 1, "Heals 20 hunger"),
+            new Item("Bandage", "A sterile bandage for treating wounds.", "medical", 10, 2, "Heals 20 health")
         ],
         0.1, // dayZombieChance
         0.2, // nightZombieChance

@@ -9,6 +9,7 @@ export class FirstAidKit implements Item {
     description: string;
     effect: number;
     quantity: number;
+    textEffect: string;
 
     constructor(uses: number = 3) {
         this.name = "First Aid Kit";
@@ -17,6 +18,7 @@ export class FirstAidKit implements Item {
         this.description = "A kit to treat injuries and infections";
         this.effect = 20;
         this.quantity = 1;
+        this.textEffect = "Heals 20 health";
     }
 
     use(player: Player) {

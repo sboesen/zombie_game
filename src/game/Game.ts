@@ -31,6 +31,7 @@ export class Game {
     private fightLoop: (() => void) | null = null;
     private map: Map;
     private isHandlingZombieDefeat: boolean = false;
+    private victoryHandled: boolean = false;
 
     constructor() {
         this.player = new Player();
@@ -123,7 +124,7 @@ export class Game {
             }
             
             if (zombie.healthSystem.getCurrentHealth() <= 0) {
-                this.handleZombieDefeat(zombie);
+                this.handleZombieDefeat();
                 return;
             }
             
@@ -457,57 +458,19 @@ export class Game {
         this.flashlightOn = state;
     }
 
-    public handleZombieDefeat(zombie: Zombie): void {
-        console.log('handleZombieDefeat called');
-        if (this.isHandlingZombieDefeat) return;
-        this.isHandlingZombieDefeat = true;
-
-        const loot = this.generateLoot(zombie);
-        const xpGained = this.calculateXP(zombie);
-
-        // Add loot to player's inventory
-        this.player.addItems(loot);
-
-        // Add XP to player
-        this.player.addXP(xpGained);
-
-        // Remove the defeated zombie from the current location
-        this.currentLocation.removeZombie(zombie);
-
-        // Show the victory modal
-        showVictoryModal(this.player, zombie, loot, xpGained);
-
-        // Update the game UI
-        this.updateUI();
-
-        this.isHandlingZombieDefeat = false;
-    }
-
-    private generateLoot(zombie: Zombie): Item[] {
-        // Implement loot generation logic here
-        // This is a simple example; you might want to make this more complex
-        const lootChance = Math.random();
-        if (lootChance < 0.7) { // 70% chance to get loot
-            return [new Item("Zombie Flesh", "A piece of rotting zombie flesh.", "misc", 1, 1)];
-        } else if (lootChance < 0.9) { // 20% chance to get better loot
-            return [new Item("Bandage", "A simple bandage to stop bleeding.", "medical", 10, 1)];
-        } else { // 10% chance to get rare loot
-            return [new Item("First Aid Kit", "A complete first aid kit.", "medical", 50, 1)];
-        }
-    }
-
-    private calculateXP(zombie: Zombie): number {
-        // Implement XP calculation logic here
-        // This is a simple example; you might want to make this more complex
-        switch (zombie.type) {
-            case ZombieType.CRAWLER:
-                return 10;
-            case ZombieType.WALKER:
-                return 20;
-            case ZombieType.BLOATER:
-                return 30;
-            default:
-                return 5;
+    public handleZombieDefeat(): void {
+        if (this.currentZombie && this.currentZombie.healthSystem.getCurrentHealth() <= 0 && !this.victoryHandled) {
+            this.victoryHandled = true;
+            const loot = this.currentZombie.generateLoot();
+            const xpGained = this.currentZombie.type.experienceReward;
+            
+            this.player.addXP(xpGained);
+            loot.forEach(item => this.player.addItems([item]));
+            
+            showVictoryModal(this.player, this.currentZombie, loot, xpGained);
+            
+            this.currentZombie = null;
+            this.updateUI();
         }
     }
 }

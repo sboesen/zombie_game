@@ -108,7 +108,7 @@ function checkFightEndConditions(player: Player, zombie: Zombie): void {
         isFightEnding = true;
         addCombatMessage("You have defeated the zombie!");
         endFight();
-        window.game.handleZombieDefeat(zombie);
+        window.game.handleZombieDefeat();
     } else if (!player.healthSystem.isPlayerAlive() && !isFightEnding) {
         isFightEnding = true;
         addCombatMessage("You have been defeated by the zombie!");

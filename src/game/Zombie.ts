@@ -1,4 +1,5 @@
 import { HealthSystem } from './health';
+import { Item } from './Item';
 import { ZombieType } from './ZombieType';
 
 export class Zombie {
@@ -20,5 +21,14 @@ export class Zombie {
         return this.healthSystem.isZombieAlive();
     }
 
-    // ... (keep other methods unchanged)
+    generateLoot(): Item[] {
+        let generatedLoot: Item[] = [];
+        for (let lootName in this.type.drops) {
+            const item = Item.findItemByName(lootName);
+            if (item) {
+                generatedLoot.push(item);
+            }
+        }
+        return generatedLoot;
+    }
 }
