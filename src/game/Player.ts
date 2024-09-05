@@ -3,6 +3,7 @@ import { Item } from '../game/Item';
 import { Tool } from './Tool';
 import { FirstAidKit } from './FirstAidKit';
 import { addMessage } from '../utils/ui';
+import { Zombie } from './Zombie';
 
 export class Player { // Implementing the Player interface
     healthSystem: HealthSystem; // Use HealthSystem for health management
@@ -68,5 +69,30 @@ export class Player { // Implementing the Player interface
             this.level++;
             // You might want to increase player stats here
         }
+    }
+
+    attack(zombie: Zombie): { hit: boolean, damage: number } {
+        const hitChance = 0.8; // 80% base hit chance
+        const hit = Math.random() < hitChance;
+
+        if (!hit) {
+            return { hit: false, damage: 0 };
+        }
+
+        let baseDamage = 5; // Base unarmed damage
+        if (this.equipment.meleeWeapon) {
+            baseDamage = this.equipment.meleeWeapon.effect || 5;
+        }
+
+        // Factor in player's strength or other relevant stats
+        const damageMultiplier = 1 + (this.level - 1) * 0.1; // 10% increase per level
+        const damage = Math.floor(baseDamage * damageMultiplier);
+
+        // Apply damage to a random body part
+        const bodyParts = ['head', 'torso', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg'];
+        const targetPart = bodyParts[Math.floor(Math.random() * bodyParts.length)];
+        zombie.healthSystem.takeDamageToBodyPart(targetPart, damage);
+
+        return { hit: true, damage };
     }
 }

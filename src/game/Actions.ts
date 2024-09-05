@@ -22,9 +22,12 @@ export function performFightAction(game: Game, action: string): void {
     
     switch (action) {
         case 'attack':
-            const damage = getPlayerDamage(game);
-            zombie.healthSystem.takeDamage(damage);
-            addMessage(`You dealt ${damage} damage to the zombie.`);
+            const playerAttackResult = player.attack(zombie);
+            if (playerAttackResult.hit) {
+                addMessage(`You hit the zombie for ${playerAttackResult.damage} damage.`);
+            } else {
+                addMessage("You missed!");
+            }
             break;
         case 'defend':
             player.defending = true;
@@ -45,21 +48,21 @@ export function performFightAction(game: Game, action: string): void {
     }
     
     // Zombie's turn
-    if (zombie.healthSystem.getCurrentHealth() > 0) {
-        let zombieDamage = zombie.type.getDamage();
-        if (player.defending) {
-            zombieDamage = Math.floor(zombieDamage / 2);
-            player.defending = false;
+    if (zombie.healthSystem.isZombieAlive()) {
+        const zombieAttackResult = zombie.attack(player);
+        if (zombieAttackResult.hit) {
+            let finalDamage = zombieAttackResult.damage;
+            if (player.defending) {
+                finalDamage = Math.floor(finalDamage / 2);
+                player.defending = false;
+            }
+            addMessage(`The zombie hit you for ${finalDamage} damage.`);
+        } else {
+            addMessage("The zombie missed!");
         }
-        player.healthSystem.takeDamage(zombieDamage);
-        addMessage(`The zombie dealt ${zombieDamage} damage to you.`);
     }
     
     game.continueFight();
 }
 
-function getPlayerDamage(game: Game): number {
-    const meleeWeapon = game.getPlayer().equipment.meleeWeapon;
-    const baseDamage = meleeWeapon ? meleeWeapon.effect || 5 : 5; // Check for null
-    return baseDamage + Math.floor(Math.random() * 5); // Add some randomness to player damage
-}
+// Remove the getPlayerDamage function as it's no longer needed

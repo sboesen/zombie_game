@@ -3,14 +3,6 @@ import { Item } from "../game/Item";
 // Items have a name, description, type, effect, textEffect, and quantity
 export const items: Item[] = [
   {
-    name: "Rusty Knife",
-    description: "A worn, slightly corroded blade with a wooden handle",
-    type: "weapon",
-    effect: 10,
-    textEffect: "50% chance to cause bleeding on hit.",
-    quantity: 1,
-  },
-  {
     name: "Canned Beans",
     description: "A slightly dented tin can with a faded label",
     type: "food",

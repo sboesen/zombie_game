@@ -111,6 +111,12 @@ export class HealthSystem {
         this.rightLeg = Math.max(0, this.rightLeg - damagePerPart);
     }
 
+    takeDamageToBodyPart(bodyPart: string, damage: number): void {
+        // Implement logic to damage specific body part
+        // For simplicity, we'll just reduce overall health for now
+        this.takeDamage(damage);
+    }
+
     healBodyPart(part: string, amount: number): void {
         if (part in this && typeof this[part as keyof HealthSystem] === 'number') {
             const currentHealth = this[part as keyof HealthSystem] as number;
