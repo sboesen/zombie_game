@@ -3,16 +3,22 @@ import { Game } from '../Game';
 import { addMessage } from '../../utils/ui';
 
 export class Flashlight implements Tool {
+    durability: number;
+    name: string;
+    description: string;
+    type: string;
+    effect: number;
+    quantity: number;
+    textEffect: string;
+
     constructor() {
-        super(
-            "Flashlight",
-            "A handheld light source",
-            "tool",
-            100,
-            1,
-            "Improves search success rate in dark areas",
-            5 // durability
-        );
+        this.durability = 100;
+        this.name = "Flashlight";
+        this.description = "A handheld light source";
+        this.type = "tool";
+        this.effect = 100;
+        this.quantity = 1;
+        this.textEffect = "Improves search success rate in dark areas";
     }
 
     canUse(game: Game): boolean {
